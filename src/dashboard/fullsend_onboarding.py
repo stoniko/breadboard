@@ -1,7 +1,7 @@
 """Run Fullsend's own onboarding command for a repository.
 
 Work package 7 of the Fullsend integration conformance plan. The dashboard
-button runs `fullsend github setup OWNER/REPO` — the real CLI, from the
+button runs `fullsend admin install OWNER/REPO` — the real CLI, from the
 runner pod that already has it installed, its CA trust and its route to the
 forge — and reports what that command did. It does not re-implement any of
 it, which is what keeps the dashboard from drifting away from the CLI and
@@ -383,8 +383,15 @@ def build_command(repository: str, config: OnboardingConfig) -> list[str]:
     introduced from outside this module.
     """
     command = [
-        "fullsend", "github", "setup", repository,
+        # Upstream moved per-repo onboarding out of `github setup` and into
+        # `admin install`, which carries the same flags. `github setup` no
+        # longer accepts --skip-app-setup and fails with "unknown flag".
+        "fullsend", "admin", "install", repository,
         "--skip-app-setup",
+        # The mint is already deployed and minting; without this the CLI
+        # inspects it as a Cloud Function and dials oauth2.googleapis.com,
+        # which the runner has no route to. Requires --mint-url, passed below.
+        "--skip-mint-check",
         "--runtime", config.runtime,
     ]
     if config.mint_url:
@@ -503,7 +510,7 @@ def onboard_repository(
         pull_request_browse_url=browse_url(repository, pr_number, config),
         pull_request_number=pr_number,
         branch=SCAFFOLD_BRANCH,
-        message=f"fullsend github setup exited {exit_code} for {repository}.",
+        message=f"fullsend admin install exited {exit_code} for {repository}.",
     )
 
 

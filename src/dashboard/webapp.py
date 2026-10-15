@@ -779,7 +779,7 @@ def create_app() -> Flask:
     def api_fullsend_onboard():
         """Onboard a repository by running Fullsend's own CLI.
 
-        Work package 7. The backend runs `fullsend github setup OWNER/REPO`
+        Work package 7. The backend runs `fullsend admin install OWNER/REPO`
         in the runner pod and reports what it did; it does not re-implement
         any of it, which keeps Fullsend's pull-request review step in the loop
         and stops the dashboard drifting from the CLI.

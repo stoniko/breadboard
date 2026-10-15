@@ -1,6 +1,6 @@
 # Who may start onboarding, and what credential it runs with
 
-The dashboard's onboarding button runs Fullsend's own `github setup` for one
+The dashboard's onboarding button runs Fullsend's own `admin install` for one
 repository in the runner pod and returns the scaffold pull request. This page
 answers the two questions work package 7 of the conformance plan left open:
 who is allowed to press that button, and where the credential it runs with
@@ -20,7 +20,7 @@ stack seeded without the App.
    the CLI runs, so a refused credential is reported as one rather than as
    an error minutes into the run.
 3. Refuses if the repository already has an open scaffold pull request.
-4. Runs `fullsend github setup OWNER/REPO ...` in the runner pod, where the
+4. Runs `fullsend admin install OWNER/REPO ...` in the runner pod, where the
    CLI already lives with the forge's CA in its trust store, with
    `GH_TOKEN`, `GITHUB_API_URL`, `GITHUB_SERVER_URL`, and the runner image
    name in its environment.
