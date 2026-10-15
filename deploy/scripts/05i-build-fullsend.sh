@@ -16,6 +16,13 @@ OPENSHELL_ROOT="${PROJECT_ROOT}/checkouts/openshell"
 # HTTPS check for an http:// URL, and nothing on any path uses one: the
 # repository variable and .fullsend/config.yaml both name https. The file is
 # kept for the record; the gap in the numbering is deliberate.
+# 0010 (do not cache a profile import that never replaced anything) is retired
+# for the same reason as the first two: upstream fixes it natively, and better.
+# ImportProfile now calls gatewayProfileMatches to compare the gateway's actual
+# content, returns an error when it does not match, and writes the hash cache
+# only on a real match - so the stale-profile-reported-as-success case 0010
+# described cannot arise. 0010 inferred the same thing from whether the delete
+# succeeded. The file is kept for the record.
 # These patch Go source before the binary is compiled. Patches that change
 # files a workflow reads at run time belong to MIRROR_PATCHES in
 # deploy/fullsend/seed/seed-upstream-fullsend.py instead; a patch in the wrong
@@ -26,12 +33,20 @@ FULLSEND_PATCHES=(
   "${PROJECT_ROOT}/deploy/fullsend/patches/0007-parse-enterprise-raw-content-urls.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0008-scope-the-minted-token-on-enterprise-forges.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0009-load-the-harness-environment-for-behaviour-ops.patch"
-  "${PROJECT_ROOT}/deploy/fullsend/patches/0010-do-not-cache-a-profile-import-that-never-replaced-anything.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0011-address-the-configured-forge-in-the-github-commands.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0012-let-an-installation-name-its-runner.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0013-allow-the-configured-forge-in-the-default-remote-resources.patch"
   "${PROJECT_ROOT}/deploy/fullsend/patches/0014-address-the-configured-forge-in-the-remaining-clients.patch"
+  "${PROJECT_ROOT}/deploy/fullsend/patches/0015-allow-a-privately-reachable-mint.patch"
 )
+# FULLSEND_SKIP_PATCHES=1 builds the checkout exactly as upstream ships it.
+# The patch list above is what adapts Fullsend to a privately reachable forge,
+# so an unpatched binary addresses api.github.com and will not drive the local
+# GitHub emulator. Use it to track upstream main, not to run the stack.
+if [[ "${FULLSEND_SKIP_PATCHES:-}" == "1" ]]; then
+  echo "==> FULLSEND_SKIP_PATCHES=1: building upstream Fullsend with no local patches"
+  FULLSEND_PATCHES=()
+fi
 RUNNER_CONTEXT="${PROJECT_ROOT}/deploy/fullsend-runner-dev"
 SANDBOX_CONTEXT="${PROJECT_ROOT}/deploy/fullsend-sandbox-dev"
 SANDBOX_LOCAL_CONTEXT="${PROJECT_ROOT}/deploy/fullsend-sandbox-local"

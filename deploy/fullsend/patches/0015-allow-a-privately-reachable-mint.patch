@@ -1,0 +1,97 @@
+Subject: feat(admin): allow a mint that is only reachable privately
+
+admin install refuses any --mint-url whose host is not mint.fullsend.sh or a
+Cloud Run address. An installation that runs its own mint inside a cluster
+reaches it on an internal name, so install rejects a mint that is deployed,
+healthy, and already minting tokens for every other path in the product. The
+allowlist is the right default for the hosted and Cloud Run installs it was
+written for, and there is no way to say "this one is mine".
+
+Add FULLSEND_ALLOW_PRIVATE_MINT, unset by default, matching the shape of
+FULLSEND_ALLOW_PRIVATE_FORGE in internal/fetch: an operator who runs a
+private mint opts in explicitly, and everyone else keeps the allowlist with
+no change in behaviour.
+
+The check is placed after validateMintURLHTTPS rather than instead of it, so
+the opt-in widens which host may be named and nothing else. A private mint
+still has to be HTTPS and still may not carry credentials in the URL; the
+tests assert both, because a relaxation that quietly also permitted http://
+would hand the minted token to anything on the path.
+
+The rejection message now names the variable, so an operator hitting the
+allowlist is told how to proceed rather than only what was refused.
+
+Found against a mint served inside a Kubernetes cluster on an internal
+service address, where onboarding failed on the host check while that same
+mint was issuing tokens to the runner.
+
+Breadboard note: patches Go source, so it belongs to the build patch list in
+deploy/scripts/05i-build-fullsend.sh rather than either mirror list. Written
+to be sent upstream as-is. Add a DCO sign-off before submitting it as a
+human-authored change.
+
+diff --git a/internal/cli/admin.go b/internal/cli/admin.go
+index 4da9591f6..ecc16a14a 100644
+--- a/internal/cli/admin.go
++++ b/internal/cli/admin.go
+@@ -164,6 +164,14 @@ func IsHostedMintURL(raw string) bool {
+ 	return strings.EqualFold(parsed.Hostname(), "mint.fullsend.sh")
+ }
+ 
++// allowPrivateMintEnv lets an operator accept a mint served on a host the
++// public allowlist cannot name. An installation that runs its own mint inside
++// a cluster reaches it on an internal address, which is neither
++// mint.fullsend.sh nor Cloud Run, so install refuses a mint that is working.
++// Opt-in and unset by default, so the hosted and Cloud Run installs that
++// motivated the allowlist keep it.
++const allowPrivateMintEnv = "FULLSEND_ALLOW_PRIVATE_MINT"
++
+ func validateMintURL(raw string) error {
+ 	if err := validateMintURLHTTPS(raw); err != nil {
+ 		return err
+@@ -178,7 +186,13 @@ func validateMintURL(raw string) error {
+ 		strings.HasSuffix(host, ".cloudfunctions.net") {
+ 		return nil
+ 	}
+-	return fmt.Errorf("--mint-url must be mint.fullsend.sh or a Cloud Run URL (.run.app or .cloudfunctions.net), got host %q", host)
++	// Deliberately after the HTTPS check above, not instead of it: a private
++	// address still has to be HTTPS and still may not carry userinfo. This
++	// relaxes which host may be named, nothing about how it is addressed.
++	if strings.TrimSpace(os.Getenv(allowPrivateMintEnv)) == "1" {
++		return nil
++	}
++	return fmt.Errorf("--mint-url must be mint.fullsend.sh or a Cloud Run URL (.run.app or .cloudfunctions.net), got host %q (set %s=1 to accept a privately reachable mint)", host, allowPrivateMintEnv)
+ }
+ 
+ func validateSkipMintCheck(mintURL string) error {
+diff --git a/internal/cli/admin_test.go b/internal/cli/admin_test.go
+index c9ab943d0..5383ec82e 100644
+--- a/internal/cli/admin_test.go
++++ b/internal/cli/admin_test.go
+@@ -883,6 +883,26 @@ func TestValidateMintURL_RejectsOtherFullsendSubdomains(t *testing.T) {
+ 	assert.Contains(t, err.Error(), "got host")
+ }
+ 
++func TestValidateMintURL_AcceptsAPrivateHostWhenAllowed(t *testing.T) {
++	t.Setenv(allowPrivateMintEnv, "1")
++	require.NoError(t, validateMintURL("https://fullsend-mint-dev.ai-pipeline.svc.cluster.local:8080"))
++}
++
++func TestValidateMintURL_RejectsAPrivateHostByDefault(t *testing.T) {
++	t.Setenv(allowPrivateMintEnv, "")
++	err := validateMintURL("https://fullsend-mint-dev.ai-pipeline.svc.cluster.local:8080")
++	require.Error(t, err)
++	assert.Contains(t, err.Error(), allowPrivateMintEnv)
++}
++
++// The opt-in widens which host may be named and nothing else: a private mint
++// still has to be HTTPS, and still may not carry credentials in the URL.
++func TestValidateMintURL_PrivateHostStillRequiresHTTPS(t *testing.T) {
++	t.Setenv(allowPrivateMintEnv, "1")
++	require.Error(t, validateMintURL("http://fullsend-mint-dev.ai-pipeline.svc.cluster.local:8080"))
++	require.Error(t, validateMintURL("https://user:pass@fullsend-mint-dev.ai-pipeline.svc.cluster.local:8080"))
++}
++
+ func TestDefaultMintURL_IsHostedCommunity(t *testing.T) {
+ 	assert.Equal(t, "https://mint.fullsend.sh", DefaultMintURL)
+ }

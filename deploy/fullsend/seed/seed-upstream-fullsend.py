@@ -21,6 +21,7 @@ Gap A1 of the Fullsend integration conformance plan.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -142,6 +143,10 @@ def apply_mirror_patches(directory: Path) -> None:
     reaches for github.com, and the resulting failure appears several jobs
     later as an unexplained 401.
     """
+    if os.environ.get("FULLSEND_SKIP_PATCHES") == "1":
+        print("FULLSEND_SKIP_PATCHES=1: mirroring the fullsend workflows unpatched")
+        return
+
     for name in MIRROR_PATCHES:
         patch = PATCH_DIR / name
         if not patch.is_file():

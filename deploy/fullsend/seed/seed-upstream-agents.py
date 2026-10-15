@@ -17,6 +17,7 @@ Gap G28 of the Fullsend integration conformance plan.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -133,6 +134,10 @@ def apply_mirror_patches(directory: Path) -> None:
     hardest to read: inside an agent's pre-script, several jobs after the thing
     that actually went wrong.
     """
+    if os.environ.get("FULLSEND_SKIP_PATCHES") == "1":
+        print("FULLSEND_SKIP_PATCHES=1: mirroring the agents harness unpatched")
+        return
+
     for name in MIRROR_PATCHES:
         patch = PATCH_DIR / name
         if not patch.is_file():

@@ -72,7 +72,13 @@ bash "${SCRIPT_DIR}/05k-build-github-actions-real-runner.sh"
 bash "${SCRIPT_DIR}/05h-build-fullsend-mint-dev.sh"
 bash "${SCRIPT_DIR}/05i-build-fullsend.sh"
 bash "${SCRIPT_DIR}/05j-build-fullsend-dashboard.sh"
-bash "${SCRIPT_DIR}/05l-build-org-pulse.sh"
+# SKIP_ORG_PULSE=1 leaves Org Pulse out of the stack. Its two checkouts,
+# org-pulse-core and rhai-org-pulse, are not cloned by the bootstrap scripts.
+if [ "${SKIP_ORG_PULSE:-}" = "1" ]; then
+  echo "  SKIP_ORG_PULSE=1, skipping Org Pulse image build"
+else
+  bash "${SCRIPT_DIR}/05l-build-org-pulse.sh"
+fi
 bash "${SCRIPT_DIR}/05m-build-model-relay.sh"
 echo ""
 
@@ -130,8 +136,12 @@ bash "${SCRIPT_DIR}/14-deploy-gitlab-emulator.sh"
 echo ""
 
 # Deploy Org Pulse (AI Engineering flavour, demo mode)
-echo "Deploying Org Pulse..."
-bash "${SCRIPT_DIR}/26-deploy-org-pulse.sh"
+if [ "${SKIP_ORG_PULSE:-}" = "1" ]; then
+  echo "SKIP_ORG_PULSE=1, skipping Org Pulse deployment"
+else
+  echo "Deploying Org Pulse..."
+  bash "${SCRIPT_DIR}/26-deploy-org-pulse.sh"
+fi
 echo ""
 
 # Deploy Model Relay (mock backend until accounts are connected)

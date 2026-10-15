@@ -42,10 +42,10 @@ be sent upstream as-is. Add a DCO sign-off before submitting it as a
 human-authored change.
 
 diff --git a/internal/runtime/dummy.go b/internal/runtime/dummy.go
-index 9904d8e..8f0f4fb 100644
+index 8f6fc8c5d..18934fc38 100644
 --- a/internal/runtime/dummy.go
 +++ b/internal/runtime/dummy.go
-@@ -70,6 +70,17 @@ type DummyRuntime struct {
+@@ -91,6 +91,17 @@ type DummyRuntime struct {
  	ExecFn         sandboxExecFunc
  	UploadFn       sandboxUploadFunc
  	WriteResultsFn writeBehaviourResultsFunc
@@ -63,7 +63,7 @@ index 9904d8e..8f0f4fb 100644
  }
  
  func (r DummyRuntime) execFn() sandboxExecFunc {
-@@ -223,6 +234,36 @@ func executeBehaviourScript(ctx context.Context, rt DummyRuntime, sandboxName, r
+@@ -256,6 +267,36 @@ func executeBehaviourScript(ctx context.Context, rt DummyRuntime, sandboxName, r
  	return results, firstErr
  }
  
@@ -100,7 +100,7 @@ index 9904d8e..8f0f4fb 100644
  func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op BehaviourOperation) error {
  	switch op.Op {
  	case "read_file":
-@@ -234,7 +275,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+@@ -267,7 +308,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
  		if err != nil {
  			return err
  		}
@@ -109,8 +109,8 @@ index 9904d8e..8f0f4fb 100644
  		_, stderr, exitCode, err := rt.execFn()(sandboxName, cmd, 30*time.Second)
  		if err != nil {
  			return fmt.Errorf("read_file exec: %w", err)
-@@ -251,7 +292,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
- 		if err := validateHTTPURL(rawURL); err != nil {
+@@ -284,7 +325,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+ 		if err := validateHTTPURL("url_get", rawURL); err != nil {
  			return err
  		}
 -		cmd := fmt.Sprintf("curl -sf -- %s -o /dev/null", shellQuote(rawURL))
@@ -118,7 +118,7 @@ index 9904d8e..8f0f4fb 100644
  		_, stderr, exitCode, err := rt.execFn()(sandboxName, cmd, 60*time.Second)
  		if err != nil {
  			return fmt.Errorf("url_get exec: %w", err)
-@@ -296,7 +337,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+@@ -329,7 +370,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
  		if !branchNamePattern.MatchString(name) || strings.Contains(name, "..") {
  			return fmt.Errorf("checkout_branch invalid branch name %q", name)
  		}
@@ -127,7 +127,7 @@ index 9904d8e..8f0f4fb 100644
  		_, stderr, exitCode, err := rt.execFn()(sandboxName, cmd, 120*time.Second)
  		if err != nil {
  			return fmt.Errorf("checkout_branch exec: %w", err)
-@@ -313,7 +354,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+@@ -346,7 +387,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
  		if !envVarNamePattern.MatchString(varName) {
  			return fmt.Errorf("assert_env invalid variable name %q", varName)
  		}
@@ -136,7 +136,7 @@ index 9904d8e..8f0f4fb 100644
  		_, stderr, exitCode, err := rt.execFn()(sandboxName, cmd, 30*time.Second)
  		if err != nil {
  			return fmt.Errorf("assert_env exec: %w", err)
-@@ -331,7 +372,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+@@ -387,7 +428,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
  		if err != nil {
  			return err
  		}
@@ -145,7 +145,7 @@ index 9904d8e..8f0f4fb 100644
  		_, stderr, exitCode, err := rt.execFn()(sandboxName, cmd, 30*time.Second)
  		if err != nil {
  			return fmt.Errorf("assert_file exec: %w", err)
-@@ -354,7 +395,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
+@@ -410,7 +451,7 @@ func executeBehaviourOp(rt DummyRuntime, sandboxName, repoDir string, op Behavio
  		if err != nil {
  			return err
  		}
@@ -155,10 +155,10 @@ index 9904d8e..8f0f4fb 100644
  		if err != nil {
  			return fmt.Errorf("assert_json exec: %w", err)
 diff --git a/internal/runtime/dummy_test.go b/internal/runtime/dummy_test.go
-index 917790d..d2b4f65 100644
+index 8df270daf..1965aa677 100644
 --- a/internal/runtime/dummy_test.go
 +++ b/internal/runtime/dummy_test.go
-@@ -581,7 +581,12 @@ func TestExecuteBehaviourOp_CheckoutBranchSuccess(t *testing.T) {
+@@ -631,7 +631,12 @@ func TestExecuteBehaviourOp_CheckoutBranchSuccess(t *testing.T) {
  // the command via sh -c instead of a sandbox.
  func runCheckoutBranchForReal(t *testing.T, repoDir, branch string) error {
  	t.Helper()
@@ -172,9 +172,9 @@ index 917790d..d2b4f65 100644
  		out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
  		if err != nil {
  			var exitErr *exec.ExitError
-@@ -811,3 +816,59 @@ func TestDummyRuntime_ClearIterationArtifacts_SweepFailureIsNotAnError(t *testin
- 	require.Len(t, cmds, 2)
- 	assert.Contains(t, cmds[1], "rm -rf")
+@@ -1242,3 +1247,59 @@ func TestExecuteBehaviourOp_AssertNotJWT(t *testing.T) {
+ 	err = executeBehaviourOp(rt, "sandbox", t.TempDir(), BehaviourOperation{Op: "assert_not_jwt", Args: "X"})
+ 	require.ErrorContains(t, err, "exec down")
  }
 +
 +// Behaviour operations run in a fresh shell per call, so a value delivered

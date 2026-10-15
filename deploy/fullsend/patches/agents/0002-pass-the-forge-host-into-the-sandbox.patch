@@ -41,11 +41,11 @@ Exercised on triage and review. The code, fix, prioritize and retro harnesses
 receive the identical two lines but have not been run against this change.
 
 diff --git a/harness/code.yaml b/harness/code.yaml
-index 97d7b46..a58b6f0 100644
+index 74de85d..c693ce3 100644
 --- a/harness/code.yaml
 +++ b/harness/code.yaml
-@@ -109,6 +109,14 @@ overlays:
-         ISSUE_NUMBER: "${ISSUE_NUMBER}"
+@@ -99,6 +99,14 @@ overlays:
+       runner:
          ISSUE_URL: "${GITHUB_ISSUE_URL}"
          GH_TOKEN: "${GH_TOKEN}"
 +        # gh reads its host from GH_HOST and, for any host that is not
@@ -57,16 +57,16 @@ index 97d7b46..a58b6f0 100644
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
          FULLSEND_FORGE: github
-   - when: 'runtime.forge == "gitlab"'
-     providers:
+       sandbox:
+         ISSUE_NUMBER: "${ISSUE_NUMBER}"
 diff --git a/harness/fix.yaml b/harness/fix.yaml
-index 668b96a..f643203 100644
+index 8540e7e..72917a8 100644
 --- a/harness/fix.yaml
 +++ b/harness/fix.yaml
 @@ -114,6 +114,14 @@ forge:
-       sandbox:
-         PR_NUMBER: "${PR_NUMBER}"
-         GH_TOKEN: "${GH_TOKEN}"
+         expand: true
+     env:
+       runner:
 +        # gh reads its host from GH_HOST and, for any host that is not
 +        # github.com, its credential from GH_ENTERPRISE_TOKEN rather than
 +        # GH_TOKEN. Without both, every call the agent makes inside the
@@ -75,17 +75,17 @@ index 668b96a..f643203 100644
 +        # environment already held rather than as the minted role.
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
+         PR_NUMBER: "${PR_NUMBER}"
          FULLSEND_FORGE: github
-   gitlab:
-     providers:
+       sandbox:
 diff --git a/harness/prioritize.yaml b/harness/prioritize.yaml
-index afabc58..4b4acbe 100644
+index 470f3f1..9bb9aa9 100644
 --- a/harness/prioritize.yaml
 +++ b/harness/prioritize.yaml
 @@ -63,6 +63,14 @@ forge:
-       sandbox:
-         ISSUE_URL: "${GITHUB_ISSUE_URL}"
-         GH_TOKEN: "${GH_TOKEN}"
+   gitlab:
+     providers:
+       - providers/gitlab-ro.yaml
 +        # gh reads its host from GH_HOST and, for any host that is not
 +        # github.com, its credential from GH_ENTERPRISE_TOKEN rather than
 +        # GH_TOKEN. Without both, every call the agent makes inside the
@@ -94,16 +94,16 @@ index afabc58..4b4acbe 100644
 +        # environment already held rather than as the minted role.
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
-         FULLSEND_FORGE: github
-   gitlab:
-     providers:
+     openshell:
+       profiles:
+         - profiles/fullsend-gitlab-ro.yaml
 diff --git a/harness/retro.yaml b/harness/retro.yaml
-index 696ee8c..f06d0f3 100644
+index eee048a..2762732 100644
 --- a/harness/retro.yaml
 +++ b/harness/retro.yaml
-@@ -78,6 +78,14 @@ forge:
-         FULLSEND_FORGE: github
-       sandbox:
+@@ -71,6 +71,14 @@ forge:
+     env:
+       runner:
          GH_TOKEN: "${GH_TOKEN}"
 +        # gh reads its host from GH_HOST and, for any host that is not
 +        # github.com, its credential from GH_ENTERPRISE_TOKEN rather than
@@ -114,13 +114,13 @@ index 696ee8c..f06d0f3 100644
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
          FULLSEND_FORGE: github
-   gitlab:
-     providers:
+       sandbox:
+         FULLSEND_FORGE: github
 diff --git a/harness/review.yaml b/harness/review.yaml
-index 72d5507..4412a67 100644
+index 1d8216c..1149493 100644
 --- a/harness/review.yaml
 +++ b/harness/review.yaml
-@@ -103,6 +103,14 @@ forge:
+@@ -94,6 +94,14 @@ forge:
          PR_NUMBER: "${PR_NUMBER}"
          PR_URL: "${GITHUB_PR_URL}"
          GH_TOKEN: "${GH_TOKEN}"
@@ -133,16 +133,16 @@ index 72d5507..4412a67 100644
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
          FULLSEND_FORGE: github
+         FULLSEND_APP_SET: "${FULLSEND_APP_SET}"
          REVIEW_RISK_ASSESSMENT_ENABLED: "true"
-   gitlab:
 diff --git a/harness/triage.yaml b/harness/triage.yaml
-index 889e41c..56f8cbd 100644
+index ca8f2f1..faca1a9 100644
 --- a/harness/triage.yaml
 +++ b/harness/triage.yaml
 @@ -67,6 +67,14 @@ overlays:
-       sandbox:
-         ISSUE_URL: "${GITHUB_ISSUE_URL}"
-         GH_TOKEN: "${GH_TOKEN}"
+         ISSUE_URL: ${GITHUB_ISSUE_URL}
+         GH_TOKEN: ${GH_TOKEN}
+         FULLSEND_FORGE: github
 +        # gh reads its host from GH_HOST and, for any host that is not
 +        # github.com, its credential from GH_ENTERPRISE_TOKEN rather than
 +        # GH_TOKEN. Without both, every call the agent makes inside the
@@ -151,6 +151,6 @@ index 889e41c..56f8cbd 100644
 +        # environment already held rather than as the minted role.
 +        GH_HOST: "${GH_HOST}"
 +        GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
+       sandbox:
+         ISSUE_URL: "${GITHUB_ISSUE_URL}"
          FULLSEND_FORGE: github
-   - when: '(has(event.source) && event.source.system == "gitlab") || (!has(event.source) && runtime.forge == "gitlab")'
-     providers:

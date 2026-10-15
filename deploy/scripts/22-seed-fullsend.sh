@@ -17,6 +17,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 export PYTHONPATH="${PROJECT_ROOT}/deploy/fullsend/seed"
 
+# The conformance target org and repository have to exist before anything
+# writes into them. seed-triage-auto-code-off.py puts .fullsend/triage.yaml
+# there, and it runs well before seed-github-app.py and seed-onboarding-app.py,
+# which are the only scripts that call ensure_org/ensure_repo themselves. On a
+# stack where the repository was onboarded by an earlier milestone this is
+# invisible; on a fresh emulator the triage seed is the first writer and fails
+# with a bare 404 that names the file rather than the missing repository.
+python3 -c 'import emulator; emulator.ensure_org(); emulator.ensure_repo()'
+
 # The per-repo shim calls a reusable workflow in fullsend-ai/fullsend, so
 # that repository has to exist in the emulator before any dispatch can
 # resolve (gap A1).

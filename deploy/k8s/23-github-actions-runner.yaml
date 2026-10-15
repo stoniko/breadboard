@@ -66,6 +66,13 @@ spec:
             # one host and nothing else; see patch 0006.
             - name: FULLSEND_ALLOW_PRIVATE_FORGE
               value: "1"
+            # The mint is served inside the cluster, which is neither
+            # mint.fullsend.sh nor Cloud Run, so `admin install` refuses it on
+            # the host allowlist. This widens which host may be named and
+            # nothing else - the URL below still has to be HTTPS; see
+            # patch 0015.
+            - name: FULLSEND_ALLOW_PRIVATE_MINT
+              value: "1"
             # A fallback for CLI commands run outside a workflow (minttoken,
             # reconcilestatus); workflows take vars.FULLSEND_MINT_URL and the
             # config's mint_url. The mint serves TLS only, and Fullsend

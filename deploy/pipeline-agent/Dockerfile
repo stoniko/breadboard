@@ -11,7 +11,9 @@ RUN git clone --depth 1 https://github.com/opendatahub-io/architecture-context.g
 
 
 # ── Stage 2: Build OpenCode from its source repository ──────────
-FROM oven/bun:1.3.14-debian AS opencode-builder
+# Must satisfy the root package.json "packageManager": bun@1.4.2 pin; the
+# build scripts refuse to run on anything outside ^1.4.2.
+FROM oven/bun:1.4.2-debian AS opencode-builder
 
 ARG OPENCODE_REPO=https://github.com/anomalyco/opencode.git
 ARG OPENCODE_REF=dev
@@ -24,10 +26,12 @@ RUN GIT_SSL_NO_VERIFY=true git clone --depth 1 --branch "${OPENCODE_REF}" "${OPE
 RUN bun install --frozen-lockfile || bun install
 ENV OPENCODE_CHANNEL=latest
 ENV OPENCODE_VERSION=0.0.0-local
-RUN cd packages/opencode && bun run script/build.ts --single --skip-embed-web-ui
+RUN cd packages/cli && bun run script/build.ts --single --skip-web-ui
 
+# build.ts names each output dir after the target with "opencode" swapped for
+# "cli", so a glibc linux build lands in dist/cli-linux-<arch>/bin/opencode.
 RUN ARCH=$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/') \
-    && cp packages/opencode/dist/opencode-linux-${ARCH}/bin/opencode /build/opencode
+    && cp packages/cli/dist/cli-linux-${ARCH}/bin/opencode /build/opencode
 
 
 # ── Stage 3: Pipeline agent ─────────────────────────────────────
