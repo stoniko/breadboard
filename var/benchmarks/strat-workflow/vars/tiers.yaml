@@ -3,60 +3,20 @@
 # (vars/models.yaml). Repeats run in rounds, all tests once and then again,
 # so the designs alternate.
 tiers:
-  # PR #83 against PR #85 on the same scenario: both tests run the workflow
-  # arm, so the only difference is the commit. S1 is eval/pr-83 (PR #83 plus
-  # the architecture-context fix, without which it would fetch an unpinned
-  # tree and sparse-check out its own checkout); S2 is PR #85, which carries
-  # that fix natively. Both commits are in the emulator's strat-creator copy
-  # and both derive from public PR heads - unlike the eval pins elsewhere in
-  # this file, they can be rebuilt from scratch.
-  # single_test, as the other comparison tiers: run S1, archive it, then S2.
-  pr83-vs-pr85:
+  # Run PR #85 on its own and evaluate the result: one RFE, start to finish,
+  # through the workflow arm. check_run.py gates it on the Jira outcome, the
+  # job finishing, and every model call matching the variant.
+  pr85-smoke:
     single_test: true
     variant: glm
     repeats: 1
     tests:
       - id: S1
-        arm: workflow
-        variants: [glm]
-        scenario: smoke-one-rfe
-        # eval/pr-83 = pr-83 (6b78355) + the architecture-context fix
-        strat_creator_ref: a20bc06d583681b98ab0706674b38640f1d9c78d
-      - id: S2
         arm: workflow
         variants: [glm]
         scenario: smoke-one-rfe
         # PR #85 head, feat/s1-workflow-hardening
         strat_creator_ref: 6a05210215247b287bb0fb61ed02e423c9de8692
-  s1-hardening-glm:
-    single_test: true
-    variant: glm
-    repeats: 1
-    tests:
-      - id: S1
-        arm: workflow
-        variants: [glm]
-        scenario: batch-three-new-rfes
-        mode: batch
-        batch_size: 3
-        strat_creator_ref: 0e7e752702727076818001d3a29208532b40dbab
-        timeout_minutes: 295
-        capture_native: true
-  s1-hardening-opus:
-    single_test: true
-    variant: opus
-    repeats: 1
-    tests:
-      - id: S1
-        arm: workflow
-        variants: [opus]
-        scenario: batch-three-new-rfes
-        mode: batch
-        batch_size: 3
-        strat_creator_ref: f3508786a1e2200731b25dfeda7e01ef772d32ce
-        workflow_max_concurrent_agents: 5
-        timeout_minutes: 295
-        capture_native: true
   glm-smoke:
     # Exactly one RFE/run per selected arm. Archive/analyze S1 before S2.
     single_test: true

@@ -161,3 +161,12 @@ spec:
       - name: gcp-credentials
         secret:
           secretName: gcp-credentials
+          # Only the chat agent uses these (chat/agent.py _get_client), and
+          # routers/chat.py already answers "Chat is not configured" without
+          # them. Trace collection, claim extraction, verification and
+          # /api/observatory/clear make no Google call. A required mount
+          # wedged the pod in ContainerCreating on a deployment that has no
+          # Google credentials, taking all of that down for a feature that
+          # degrades on its own. The runner's mount is optional for the same
+          # reason.
+          optional: true
