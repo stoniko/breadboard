@@ -19,7 +19,11 @@ repeats: ""
 # pushed, full 40-character commit.
 breadboard_ref: ""
 workflow_source_commit: ""
-breadboard_repo: https://github.com/jctanner/breadboard
+# The fork these benchmark changes are pushed to. Job pods clone their
+# scripts from here, so it must match the repository markovd imported the
+# workflow from, or a run would mix this fork's workflow with upstream's
+# scripts.
+breadboard_repo: https://github.com/stoniko/breadboard
 
 # Clear the artifacts volume, MLflow and Observatory once before the first
 # run. Between runs only Jira is reset and seeded, so every run's strace, API

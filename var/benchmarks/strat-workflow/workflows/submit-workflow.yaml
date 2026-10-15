@@ -1,5 +1,5 @@
 name: submit-workflow
-description: "PR #83, the Claude Workflow: run-workflow.sh runs pre-strategy.sh, the Workflow once, PR #83's checker and post step, and releases locks"
+description: "The Claude Workflow arm: run-workflow.sh runs pre-strategy.sh, the Workflow once, the arm commit's checker and post step, and releases locks"
 
 steps:
   - name: submit_job
@@ -20,6 +20,7 @@ steps:
           strace: true
           extra_env:
             STRAT_CREATOR_REF: "{{ run.strat_creator_ref }}"
+            STRAT_CREATOR_REPO: "{{ arm.repo }}"
             STRAT_ARCHITECTURE_CONTEXT_PATH: "{{ architecture_context_path }}"
             STRAT_BG_WAIT_CEILING_MS: "{{ workflow_bg_wait_ceiling_ms }}"
             BATCH_SIZE: "{{ run.batch_size }}"
@@ -47,6 +48,7 @@ steps:
           strace: true
           extra_env:
             STRAT_CREATOR_REF: "{{ run.strat_creator_ref }}"
+            STRAT_CREATOR_REPO: "{{ arm.repo }}"
             STRAT_ARCHITECTURE_CONTEXT_PATH: "{{ architecture_context_path }}"
             STRAT_BG_WAIT_CEILING_MS: "{{ workflow_bg_wait_ceiling_ms }}"
             BATCH_SIZE: "{{ run.batch_size }}"

@@ -3,6 +3,31 @@
 # (vars/models.yaml). Repeats run in rounds, all tests once and then again,
 # so the designs alternate.
 tiers:
+  # PR #83 against PR #85 on the same scenario: both tests run the workflow
+  # arm, so the only difference is the commit. S1 is eval/pr-83 (PR #83 plus
+  # the architecture-context fix, without which it would fetch an unpinned
+  # tree and sparse-check out its own checkout); S2 is PR #85, which carries
+  # that fix natively. Both commits are in the emulator's strat-creator copy
+  # and both derive from public PR heads - unlike the eval pins elsewhere in
+  # this file, they can be rebuilt from scratch.
+  # single_test, as the other comparison tiers: run S1, archive it, then S2.
+  pr83-vs-pr85:
+    single_test: true
+    variant: glm
+    repeats: 1
+    tests:
+      - id: S1
+        arm: workflow
+        variants: [glm]
+        scenario: smoke-one-rfe
+        # eval/pr-83 = pr-83 (6b78355) + the architecture-context fix
+        strat_creator_ref: a20bc06d583681b98ab0706674b38640f1d9c78d
+      - id: S2
+        arm: workflow
+        variants: [glm]
+        scenario: smoke-one-rfe
+        # PR #85 head, feat/s1-workflow-hardening
+        strat_creator_ref: 6a05210215247b287bb0fb61ed02e423c9de8692
   s1-hardening-glm:
     single_test: true
     variant: glm

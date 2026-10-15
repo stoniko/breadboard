@@ -2,19 +2,31 @@
 # submit-<arm> (workflows/submit-workflow.yaml, workflows/submit-bash.yaml),
 # called from run-test with a templated workflow name.
 #
-# Commits are in the local strat-creator copy in the GitHub emulator:
-# unchanged PR baselines on pr-83/pr-80/pr-81, eval patches on eval/* (see the
-# plan, "strat-creator lives in the GitHub emulator").
+# Commits are in the local strat-creator copy in the GitHub emulator
+# (opendatahub-io/strat-creator, the name seed_scenario.py and selfcheck.sh
+# hardcode): unchanged PR baselines on pr-83/pr-80, eval patches on eval/*
+# (see the plan, "strat-creator lives in the GitHub emulator").
+# An arm's repo is passed to its job as STRAT_CREATOR_REPO, so both arms
+# name one rather than relying on run-workflow.sh's default.
+#
+# The original eval pins (1bd7f17, 0287b83) were lost with the emulator they
+# were built in; they exist in no public remote. The eval branches here were
+# rebuilt from the public PR heads - see their commit messages, and
+# `git log pr-83..eval/pr-83`.
 arms:
   workflow:
-    description: Claude Workflow (strat-creator PR #83), run by scripts/run-workflow.sh
-    # eval/pr-83: PR #83 (6b78355) plus the fetch-architecture-context.sh fix
-    strat_creator_ref: 1bd7f1718c7ed10f2900691c0e9eaea2b8e48e43
+    description: Claude Workflow (strat-creator PR #85), run by scripts/run-workflow.sh
+    # feat/s1-workflow-hardening, the head of PR #85 "claude workflow with
+    # hardening". Tiers may override this per test; pr83-vs-pr85 does.
+    strat_creator_ref: 6a05210215247b287bb0fb61ed02e423c9de8692
+    repo: https://github.local/opendatahub-io/strat-creator
   bash:
     description: bash entrypoint (strat-creator PR #80), .fullsend/scripts/strategy-entrypoint.sh
-    # eval/pr-80: PR #80 plus the STRAT_MODEL, STRAT_ARCHITECTURE_CONTEXT_PATH and
-    # fetch-architecture-context.sh patches
-    strat_creator_ref: 0287b838d2bc59a2569cf2dd971aad7ad2d76dad
+    # eval/pr-80: PR #80 plus the architecture-context fix (taken verbatim
+    # from PR #85) and STRAT_MODEL. Rebuilt; the STRAT_MODEL patch is a
+    # rewrite from the plan's description, not the original commit, so runs
+    # on this arm are not directly comparable with analysis.md's numbers.
+    strat_creator_ref: 4923ea6029be94e9e6fa5d04bab5adaccec3ecb7
     repo: https://github.local/opendatahub-io/strat-creator
     # Throwaway results repository PR #80 publishes to; the token is the
     # emulator's development default from deploy/k8s/10-github-emulator.yaml.
